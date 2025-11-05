@@ -2,233 +2,235 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 视口设置：适配手机屏幕，禁止缩放 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>温柔提醒</title>
     <style>
-        /* 基础样式重置：清除默认边距和内边距，统一盒模型 */
+        /* 基础样式重置 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "微软雅黑", sans-serif; /* 统一字体 */
+            font-family: "微软雅黑", sans-serif;
         }
-        /* 页面基础样式：全屏显示，禁止滚动 */
         body {
-            width: 100vw;  /* 宽度占满屏幕 */
-            height: 100vh; /* 高度占满屏幕 */
-            overflow: hidden; /* 隐藏滚动条，禁止页面滚动 */
-            background: #fff; /* 白色背景 */
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #fff;
         }
 
-        /* 启动页样式 */
+        /* 启动页样式（对应Python的create_start_window） */
         .start-page {
-            position: absolute; /* 绝对定位，覆盖整个屏幕 */
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: white; /* 白色背景 */
-            display: flex; /* 弹性布局，用于居中内容 */
-            flex-direction: column; /* 垂直方向排列 */
-            align-items: center; /* 水平居中 */
-            justify-content: center; /* 垂直居中 */
-            z-index: 100; /* 层级最高，确保在最上层显示 */
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
         }
-        /* 标题区域容器 */
         .title {
-            display: flex; /* 弹性布局，横向排列图标和文字 */
-            align-items: center; /* 垂直居中对齐 */
-            margin-bottom: 20px; /* 底部间距 */
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
         }
-        /* 礼物图标 */
         .gift {
-            font-size: 40px; /* 图标大小 */
-            margin-right: 15px; /* 右侧间距 */
+            font-size: 40px;
+            margin-right: 15px;
         }
-        /* 主标题文字 */
         .main-title {
-            font-size: 24px; /* 字体大小 */
-            font-weight: bold; /* 加粗 */
-            color: #4a6fa5; /* 蓝色文字 */
+            font-size: 24px;
+            font-weight: bold;
+            color: #4a6fa5;
         }
-        /* 副标题文字 */
         .sub-title {
-            font-size: 16px; /* 字体大小 */
-            color: #666; /* 灰色文字 */
-            margin-bottom: 50px; /* 底部间距，拉开与按钮的距离 */
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 50px;
         }
-        /* 开始体验按钮 */
         .start-btn {
-            width: 200px; /* 宽度 */
-            height: 50px; /* 高度 */
-            font-size: 18px; /* 文字大小 */
-            color: #4a6fa5; /* 文字颜色 */
-            background: white; /* 白色背景 */
-            border: 2px solid #4a6fa5; /* 蓝色边框 */
-            border-radius: 25px; /* 圆角，使按钮更圆润 */
-            cursor: pointer; /* 鼠标悬停时显示手型 */
-            transition: all 0.3s; /* 过渡动画，使交互更平滑 */
+            width: 200px;
+            height: 50px;
+            font-size: 18px;
+            color: #4a6fa5;
+            background: white;
+            border: 2px solid #4a6fa5;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .start-btn:hover {
+            background: #4a6fa5;
+            color: white;
         }
 
-        /* 祝福窗口容器：用于承载所有动态创建的祝福窗口 */
+        /* 祝福窗口容器（对应Python的Toplevel窗口集合） */
         .tips-container {
-            position: absolute; /* 绝对定位，覆盖整个屏幕 */
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* 允许点击穿透容器，不影响下层元素 */
-            z-index: 50; /* 层级低于启动页和结束页 */
+            pointer-events: none;
+            z-index: 50;
         }
-        /* 单个祝福窗口样式 */
+        /* 单个祝福窗口样式（对应Python的create_tip_window） */
         .tip-window {
             position: absolute;
-            width: 70vw; /* 占屏幕宽度70%，适配手机 */
-            max-width: 280px;
-            height: 100px;
-            border-radius: 10px;
+            width: 300px;
+            height: 90px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.5s ease;
-        }
-        /* 祝福文字样式 */
-        .tip-text {
-            font-size: 18px; /* 文字大小 */
-            color: #333; /* 深灰色文字 */
-            text-align: center; /* 文字居中 */
-            padding: 0 10px; /* 左右内边距，避免文字贴边 */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* 加深阴影，增强立体感 */
+            transform: scale(0.8); /* 初始缩小 */
+            opacity: 0; /* 初始透明 */
+            animation: popIn 0.3s forwards; /* 弹出动画 */
+            transition: all 0.3s; /* 关闭时的过渡动画 */
         }
 
-        /* 结束页样式 */
+        /* 定义弹出动画：从缩小透明到正常 */
+        @keyframes popIn {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .tip-text {
+            font-size: 16px;
+            color: #333;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        /* 结束页样式（对应Python的create_final_window） */
         .final-page {
-            position: absolute; /* 绝对定位，覆盖整个屏幕 */
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: white; /* 白色背景 */
-            display: none; /* 默认隐藏，所有窗口关闭后显示 */
-            flex-direction: column; /* 垂直方向排列 */
-            align-items: center; /* 水平居中 */
-            justify-content: center; /* 垂直居中 */
-            z-index: 200; /* 层级最高，确保在最上层显示 */
+            background: white;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
         }
-        /* 结束页文字 */
         .final-text {
-            font-size: 22px; /* 文字大小 */
-            font-weight: bold; /* 加粗 */
-            background: lightpink; /* 浅粉色背景 */
-            padding: 15px 30px; /* 内边距 */
-            border-radius: 8px; /* 圆角 */
-            margin-bottom: 30px; /* 底部间距，拉开与按钮的距离 */
+            font-size: 18px;
+            font-weight: bold;
+            background: lightpink;
+            padding: 15px 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
         }
-        /* 退出按钮 */
         .exit-btn {
-            width: 120px; /* 宽度 */
-            height: 40px; /* 高度 */
-            font-size: 14px; /* 文字大小 */
-            background: #4a6fa5; /* 蓝色背景 */
-            color: white; /* 白色文字 */
-            border: none; /* 去掉默认边框 */
-            border-radius: 20px; /* 圆角 */
-            cursor: pointer; /* 鼠标悬停时显示手型 */
+            width: 120px;
+            height: 40px;
+            font-size: 16px;
+            background: #4a6fa5;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
         }
 
-        /* 手机适配：当屏幕宽度小于768px时生效 */
+        /* 响应式适配（手机端调整） */
         @media (max-width: 768px) {
             .tip-window {
-                width: 80vw; /* 窗口宽度占屏幕80%，适配不同手机 */
-                max-width: 280px; /* 最大宽度限制 */
-                height: 120px; /* 适当增加高度，避免文字拥挤 */
+                width: 80vw;
+                max-width: 300px;
+                height: 100px;
             }
             .main-title {
-                font-size: 20px; /* 缩小标题文字，适配手机屏幕 */
+                font-size: 20px;
             }
             .final-text {
-                font-size: 18px; /* 缩小结束页文字 */
-                padding: 12px 20px; /* 减少内边距 */
+                font-size: 16px;
+                padding: 12px 20px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- 启动页：初始显示的页面 -->
+    <!-- 启动页 -->
     <div class="start-page" id="startPage">
         <div class="title">
-            <span class="gift">🎁</span> <!-- 礼物图标 -->
-            <span class="main-title">你收到了一份温柔提醒</span> <!-- 主标题 -->
+            <span class="gift">🎁</span>
+            <span class="main-title">你收到了一份温柔提醒</span>
         </div>
-        <span class="sub-title">朋友为你准备了一些温暖的话语</span> <!-- 副标题 -->
-        <button class="start-btn" id="startBtn">开始体验</button> <!-- 开始按钮 -->
+        <span class="sub-title">朋友为你准备了一些温暖的话语</span>
+        <button class="start-btn" id="startBtn">开始体验</button>
     </div>
 
-    <!-- 祝福窗口容器：动态创建的祝福窗口会添加到这里 -->
+    <!-- 祝福窗口容器 -->
     <div class="tips-container" id="tipsContainer"></div>
 
-    <!-- 结束页：所有窗口关闭后显示 -->
+    <!-- 结束页 -->
     <div class="final-page" id="finalPage">
-        <div class="final-text">谢谢观看我的好朋友</div> <!-- 结束页文字 -->
-        <button class="exit-btn" id="exitBtn">退出</button> <!-- 退出按钮 -->
+        <div class="final-text">谢谢观看我的好朋友</div>
+        <button class="exit-btn" id="exitBtn">退出</button>
     </div>
 
     <script>
-        // 获取页面元素（通过ID）
-        const startPage = document.getElementById('startPage'); // 启动页容器
-        const startBtn = document.getElementById('startBtn'); // 开始体验按钮
-        const tipsContainer = document.getElementById('tipsContainer'); // 祝福窗口容器
-        const finalPage = document.getElementById('finalPage'); // 结束页容器
-        const exitBtn = document.getElementById('exitBtn'); // 退出按钮
+        // 获取页面元素
+        const startPage = document.getElementById('startPage');
+        const startBtn = document.getElementById('startBtn');
+        const tipsContainer = document.getElementById('tipsContainer');
+        const finalPage = document.getElementById('finalPage');
+        const exitBtn = document.getElementById('exitBtn');
 
-        // 祝福语句列表：随机显示其中一条
+        // 祝福语句列表（与Python完全一致）
         const tips = [
-            '多喝水哦～', '保持微笑呀', '每天都要元气满满', '保持好心情', '好好爱自己',
-            '梦想成真', '顺顺利利', '早点休息', '愿所有烦恼都消失', '别熬夜',
-            '今天过得开心嘛', '天冷了，多穿衣服', '新的一天也要闪闪发光呀', '累了就停下来歇一歇',
-            '你的努力超棒的', '记得给生活加点甜', '脚步慢一点也没关系', '像阳光一样灿烂吧',
-            '小日子会越来越顺的', '照顾好自己呀'
-        ];
-        // 背景色列表：随机为窗口选择一种背景色
-        const bgColors = [
-            'lightpink', 'skyblue', 'lightgreen', 'lavender', 'lightyellow', 'plum',
-            'coral', 'bisque', 'aquamarine', 'mistyrose', 'honeydew', 'lavenderblush', 'oldlace'
+            '多喝水哦～', '保持微笑呀', '每天都要元气满满',
+            '保持好心情', '好好爱自己', '梦想成真', '顺顺利利',
+            '早点休息', '愿所有烦恼都消失', '别熬夜', '今天过得开心嘛',
+            '天冷了，多穿衣服','累了就停下来歇一歇',
+            '你的努力超棒的', '照顾好自己呀'
         ];
 
-        // 给开始按钮添加点击事件：点击后隐藏启动页，创建祝福窗口
+        // 背景色列表（与Python完全一致）
+        const bgColors = [
+            'lightpink', 'skyblue', 'lightgreen', 'lavender',
+            'lightyellow', 'plum', 'coral', 'bisque', 'aquamarine',
+            'mistyrose', 'honeydew', 'lavenderblush', 'oldlace'
+        ];
+
+        // 开始按钮点击事件（对应Python的start_experience）
         startBtn.addEventListener('click', () => {
-            startPage.style.display = 'none'; // 隐藏启动页
-            createTipWindows(); // 调用函数创建祝福窗口
+            startPage.style.display = 'none';
+            createTipWindows();
         });
 
-        // 给退出按钮添加点击事件：关闭页面或刷新
+        // 退出按钮点击事件
         exitBtn.addEventListener('click', () => {
-            // 微信浏览器中调用API关闭窗口
             if (window.WeixinJSBridge) {
-                WeixinJSBridge.call('closeWindow');
+                WeixinJSBridge.call('closeWindow'); // 微信环境关闭窗口
             } else {
-                // 其他浏览器中刷新页面（重置体验）
-                location.reload();
+                location.reload(); // 其他环境刷新重置
             }
         });
 
         /**
-         * 创建所有祝福窗口
-         * 动态生成指定数量的窗口，随机位置、随机背景色、随机祝福文字
+         * 创建所有祝福窗口（对应Python的循环创建Toplevel窗口）
          */
         function createTipWindows() {
-            const windowCount = 30;
+            const windowCount = 80; // 比之前多一点，接近Python的200个（网页能承载的上限）
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
-            const windowWidth = Math.min(280, screenWidth * 0.8); // 窗口宽度不超过屏幕80%
-            const windowHeight = 100;
             tipsContainer.innerHTML = '';
 
         for (let i = 0; i < windowCount; i++) {
-            const maxLeft = screenWidth - windowWidth;
-            const maxTop = screenHeight - windowHeight;
-            const left = Math.random() * maxLeft;
-            const top = Math.random() * maxTop;
+            // 随机位置（扩大范围，允许更多窗口分布）
+            const left = Math.random() * (screenWidth + 200) - 100; // 左右超出100px
+            const top = Math.random() * (screenHeight + 200) - 100; // 上下超出100px
+
             const tipText = tips[Math.floor(Math.random() * tips.length)];
             const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
 
@@ -236,49 +238,38 @@
             tipWindow.className = 'tip-window';
             tipWindow.style.left = `${left}px`;
             tipWindow.style.top = `${top}px`;
-            tipWindow.style.width = `${windowWidth}px`; // 动态设置宽度
-            tipWindow.style.height = `${windowHeight}px`;
             tipWindow.style.backgroundColor = bgColor;
             tipWindow.innerHTML = `<span class="tip-text">${tipText}</span>`;
             tipsContainer.appendChild(tipWindow);
 
-        if (i < windowCount - 1) {
-            awaitSleep(10);
+            // 关键：每个窗口的弹出动画延迟随机（0-500ms），避免同步出现
+            tipWindow.style.animationDelay = `${Math.random() * 500}ms`;
+        }
+
+    // 2秒后开始关闭
+        setTimeout(() => closeWindowsOneByOne(0), 2000);
+    }
+
+        /**
+         * 逐个关闭窗口（对应Python的close_windows_one_by_one）
+         */
+        function closeWindowsOneByOne(index) {
+            const allWindows = document.querySelectorAll('.tip-window');
+            if (index < allWindows.length) {
+                allWindows[index].classList.add('hide'); // 触发关闭动画
+                setTimeout(() => {
+                closeWindowsOneByOne(index + 1);
+            }, 20); // 稍慢一点，让动画更明显
+        } else {
+            finalPage.style.display = 'flex';
         }
     }
 
-    setTimeout(() => {
-        closeWindowsOneByOne(0);
-    }, 2000);
-}
-
         /**
-         * 逐个关闭窗口
-         * @param {number} index - 当前要关闭的窗口索引
-         */
-        function closeWindowsOneByOne(index) {
-            const allWindows = document.querySelectorAll('.tip-window'); // 获取所有祝福窗口
-            // 如果还有窗口未关闭
-            if (index < allWindows.length) {
-                // 让当前窗口透明度变为0（通过CSS过渡动画实现淡出效果）
-                allWindows[index].style.opacity = '0';
-                // 30ms后关闭下一个窗口（控制关闭速度）
-                setTimeout(() => {
-                    closeWindowsOneByOne(index + 1);
-                }, 30);
-            } else {
-                // 所有窗口关闭后，显示结束页
-                finalPage.style.display = 'flex';
-            }
-        }
-
-        /**
-         * 简易休眠函数（阻塞线程，控制窗口创建速度）
-         * @param {number} ms - 休眠时间（毫秒）
+         * 休眠函数（模拟Python的time.sleep）
          */
         function awaitSleep(ms) {
-            const start = Date.now(); // 记录开始时间
-            // 循环等待，直到达到指定时间
+            const start = Date.now();
             while (Date.now() - start < ms) {}
         }
     </script>
