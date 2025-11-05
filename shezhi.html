@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>温柔提醒（Python与HTML逻辑合并版）</title>
+    <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", sans-serif;
+        }
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        /* 启动页样式 */
+        .start-page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .gift {
+            font-size: 40px;
+            margin-right: 15px;
+        }
+        .main-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4a6fa5;
+        }
+        .sub-title {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 50px;
+        }
+        .start-btn {
+            width: 200px;
+            height: 50px;
+            font-size: 18px;
+            color: #4a6fa5;
+            background: white;
+            border: 2px solid #4a6fa5;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        /* 祝福窗口容器 */
+        .tips-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+        .tip-window {
+            position: absolute;
+            width: 70vw;
+            max-width: 280px;
+            height: 110px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .tip-text {
+            font-size: 16px;
+            color: #333;
+            text-align: center;
+            padding: 0 15px;
+        }
+
+        /* 结束页样式 */
+        .final-page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+        .final-text {
+            font-size: 22px;
+            font-weight: bold;
+            background: lightpink;
+            padding: 15px 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .exit-btn {
+            width: 120px;
+            height: 40px;
+            font-size: 14px;
+            background: #4a6fa5;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        /* 手机适配 */
+        @media (max-width: 768px) {
+            .tip-window {
+                width: 80vw;
+                height: 120px;
+            }
+            .main-title {
+                font-size: 20px;
+            }
+            .final-text {
+                font-size: 18px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 启动页：对应Python中的create_start_window函数 -->
+    <div class="start-page" id="startPage">
+        <div class="title">
+            <span class="gift">🎁</span>
+            <span class="main-title">你收到了一份温柔提醒</span>
+        </div>
+        <span class="sub-title">朋友为你准备了一些温暖的话语</span>
+        <button class="start-btn" id="startBtn">开始体验</button>
+    </div>
+
+    <!-- 祝福窗口容器：对应Python中动态创建的Toplevel窗口容器 -->
+    <div class="tips-container" id="tipsContainer"></div>
+
+    <!-- 结束页：对应Python中的create_final_window函数 -->
+    <div class="final-page" id="finalPage">
+        <div class="final-text">谢谢观看我的好朋友</div>
+        <button class="exit-btn" id="exitBtn">退出</button>
+    </div>
+
+    <script>
+        // ===== 对应Python中的变量定义 =====
+        // 获取页面元素（类似Python中的tkinter组件对象）
+        const startPage = document.getElementById('startPage');
+        const startBtn = document.getElementById('startBtn');
+        const tipsContainer = document.getElementById('tipsContainer');
+        const finalPage = document.getElementById('finalPage');
+        const exitBtn = document.getElementById('exitBtn');
+
+        // 祝福语句列表（与Python中的tips列表完全一致）
+        const tips = [
+            '多喝水哦～', '保持微笑呀', '每天都要元气满满', '保持好心情', '好好爱自己',
+            '梦想成真', '顺顺利利', '早点休息', '愿所有烦恼都消失', '别熬夜',
+            '今天过得开心嘛', '天冷了，多穿衣服', '新的一天也要闪闪发光呀', '累了就停下来歇一歇',
+            '你的努力超棒的', '记得给生活加点甜', '脚步慢一点也没关系', '像阳光一样灿烂吧',
+            '小日子会越来越顺的', '照顾好自己呀'
+        ];
+        // 背景色列表（与Python中的bg_colors列表完全一致）
+        const bgColors = [
+            'lightpink', 'skyblue', 'lightgreen', 'lavender', 'lightyellow', 'plum',
+            'coral', 'bisque', 'aquamarine', 'mistyrose', 'honeydew', 'lavenderblush', 'oldlace'
+        ];
+
+        // ===== 对应Python中的事件绑定 =====
+        // 开始按钮点击事件（对应Python中start_btn的command参数）
+        startBtn.addEventListener('click', () => {
+            startPage.style.display = 'none'; // 隐藏启动页（对应Python中start_window.destroy()）
+            createTipWindows(); // 创建祝福窗口
+        });
+
+        // 退出按钮点击事件（对应Python中exit按钮的command参数）
+        exitBtn.addEventListener('click', () => {
+            if (window.WeixinJSBridge) WeixinJSBridge.call('closeWindow'); // 微信中关闭窗口
+            else location.reload(); // 其他浏览器刷新重置
+        });
+
+        // ===== 核心逻辑函数（与Python函数一一对应） =====
+        /**
+         * 创建所有祝福窗口
+         * 对应Python中的create_tip_window函数 + start_experience中的循环创建逻辑
+         */
+        function createTipWindows() {
+            const windowCount = 20; // 窗口数量（比Python的200少，适配手机）
+            const screenWidth = window.innerWidth; // 屏幕宽度（对应Python中的main_window.winfo_screenwidth()）
+            const screenHeight = window.innerHeight; // 屏幕高度（对应Python中的main_window.winfo_screenheight()）
+            const windowWidth = Math.min(screenWidth * 0.7, 280); // 窗口宽度（动态计算，适配手机）
+            const windowHeight = 110; // 窗口高度
+            tipsContainer.innerHTML = ''; // 清空容器
+
+            // 循环创建窗口（对应Python中for _ in range(200)的循环）
+            for (let i = 0; i < windowCount; i++) {
+                // 计算随机位置（确保窗口在屏幕内，对应Python中的random.randint）
+                const maxLeft = screenWidth - windowWidth - 20;
+                const maxTop = screenHeight - windowHeight - 20;
+                const left = 10 + Math.random() * maxLeft;
+                const top = 10 + Math.random() * maxTop;
+
+                // 随机选择文字和背景色（对应Python中的random.choice）
+                const tipText = tips[Math.floor(Math.random() * tips.length)];
+                const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+
+                // 创建窗口元素（对应Python中的tk.Toplevel）
+                const tipWindow = document.createElement('div');
+                tipWindow.className = 'tip-window';
+                tipWindow.style.left = `${left}px`;
+                tipWindow.style.top = `${top}px`;
+                tipWindow.style.width = `${windowWidth}px`;
+                tipWindow.style.height = `${windowHeight}px`;
+                tipWindow.style.backgroundColor = bgColor;
+                tipWindow.innerHTML = `<span class="tip-text">${tipText}</span>`; // 对应Python中的tk.Label
+                tipsContainer.appendChild(tipWindow);
+
+                // 控制创建速度（对应Python中的time.sleep(0.01)）
+                if (i < windowCount - 1) awaitSleep(20);
+            }
+
+            // 2秒后开始关闭窗口（对应Python中的main_window.after(2000, ...)）
+            setTimeout(() => closeWindowsOneByOne(0), 2000);
+        }
+
+        /**
+         * 逐个关闭窗口
+         * 完全对应Python中的close_windows_one_by_one函数
+         */
+        function closeWindowsOneByOne(index) {
+            const allWindows = document.querySelectorAll('.tip-window'); // 获取所有窗口
+            if (index < allWindows.length) {
+                allWindows[index].style.opacity = '0'; // 淡出效果（对应Python中的window.destroy()）
+                setTimeout(() => closeWindowsOneByOne(index + 1), 30); // 递归关闭下一个
+            } else {
+                finalPage.style.display = 'flex'; // 显示结束页（对应Python中的create_final_window）
+            }
+        }
+
+        /**
+         * 休眠函数
+         * 对应Python中的time.sleep函数
+         */
+        function awaitSleep(ms) {
+            const start = Date.now();
+            while (Date.now() - start < ms) {}
+        }
+    </script>
+</body>
+</html>
