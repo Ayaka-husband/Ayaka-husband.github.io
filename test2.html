@@ -217,47 +217,40 @@
          * 动态生成指定数量的窗口，随机位置、随机背景色、随机祝福文字
          */
         function createTipWindows() {
-            const windowCount = 30; // 窗口数量（手机适配，数量适中）
-            const screenWidth = window.innerWidth; // 获取屏幕宽度
-            const screenHeight = window.innerHeight; // 获取屏幕高度
-            tipsContainer.innerHTML = ''; // 清空容器（避免重复创建）
+            const windowCount = 30;
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const windowWidth = Math.min(280, screenWidth * 0.8); // 窗口宽度不超过屏幕80%
+            const windowHeight = 100;
+            tipsContainer.innerHTML = '';
 
-            // 循环创建窗口
-            for (let i = 0; i < windowCount; i++) {
-                // 计算窗口最大可放置的left和top（避免窗口超出屏幕）
-                const maxLeft = screenWidth - 280; // 窗口宽度280px
-                const maxTop = screenHeight - 100; // 窗口高度100px
-                // 随机生成left和top值（窗口位置）
-                const left = Math.random() * maxLeft;
-                const top = Math.random() * maxTop;
-                // 随机选择一条祝福文字
-                const tipText = tips[Math.floor(Math.random() * tips.length)];
-                // 随机选择一种背景色
-                const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+        for (let i = 0; i < windowCount; i++) {
+            const maxLeft = screenWidth - windowWidth;
+            const maxTop = screenHeight - windowHeight;
+            const left = Math.random() * maxLeft;
+            const top = Math.random() * maxTop;
+            const tipText = tips[Math.floor(Math.random() * tips.length)];
+            const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
 
-                // 创建窗口元素
-                const tipWindow = document.createElement('div');
-                tipWindow.className = 'tip-window'; // 添加样式类
-                // 设置窗口位置、背景色
-                tipWindow.style.left = `${left}px`;
-                tipWindow.style.top = `${top}px`;
-                tipWindow.style.backgroundColor = bgColor;
-                // 设置窗口内容（祝福文字）
-                tipWindow.innerHTML = `<span class="tip-text">${tipText}</span>`;
-                // 将窗口添加到容器中
-                tipsContainer.appendChild(tipWindow);
+            const tipWindow = document.createElement('div');
+            tipWindow.className = 'tip-window';
+            tipWindow.style.left = `${left}px`;
+            tipWindow.style.top = `${top}px`;
+            tipWindow.style.width = `${windowWidth}px`; // 动态设置宽度
+            tipWindow.style.height = `${windowHeight}px`;
+            tipWindow.style.backgroundColor = bgColor;
+            tipWindow.innerHTML = `<span class="tip-text">${tipText}</span>`;
+            tipsContainer.appendChild(tipWindow);
 
-                // 控制窗口创建速度：除最后一个窗口外，每个窗口创建后停顿10ms
-                if (i < windowCount - 1) {
-                    awaitSleep(10);
-                }
-            }
-
-            // 所有窗口创建完成后，2秒（2000ms）后开始逐个关闭窗口
-            setTimeout(() => {
-                closeWindowsOneByOne(0); // 从第0个窗口开始关闭
-            }, 2000);
+        if (i < windowCount - 1) {
+            awaitSleep(10);
         }
+    }
+
+    setTimeout(() => {
+        closeWindowsOneByOne(0);
+    }, 2000);
+}
 
         /**
          * 逐个关闭窗口
