@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 视口设置：适配手机屏幕，禁止缩放 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>温柔提醒</title>
+    <style>
+        /* 基础样式重置：清除默认边距和内边距，统一盒模型 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", sans-serif; /* 统一字体 */
+        }
+        /* 页面基础样式：全屏显示，禁止滚动 */
+        body {
+            width: 100vw;  /* 宽度占满屏幕 */
+            height: 100vh; /* 高度占满屏幕 */
+            overflow: hidden; /* 隐藏滚动条，禁止页面滚动 */
+            background: #fff; /* 白色背景 */
+        }
+
+        /* 启动页样式 */
+        .start-page {
+            position: absolute; /* 绝对定位，覆盖整个屏幕 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white; /* 白色背景 */
+            display: flex; /* 弹性布局，用于居中内容 */
+            flex-direction: column; /* 垂直方向排列 */
+            align-items: center; /* 水平居中 */
+            justify-content: center; /* 垂直居中 */
+            z-index: 100; /* 层级最高，确保在最上层显示 */
+        }
+        /* 标题区域容器 */
+        .title {
+            display: flex; /* 弹性布局，横向排列图标和文字 */
+            align-items: center; /* 垂直居中对齐 */
+            margin-bottom: 20px; /* 底部间距 */
+        }
+        /* 礼物图标 */
+        .gift {
+            font-size: 40px; /* 图标大小 */
+            margin-right: 15px; /* 右侧间距 */
+        }
+        /* 主标题文字 */
+        .main-title {
+            font-size: 24px; /* 字体大小 */
+            font-weight: bold; /* 加粗 */
+            color: #4a6fa5; /* 蓝色文字 */
+        }
+        /* 副标题文字 */
+        .sub-title {
+            font-size: 16px; /* 字体大小 */
+            color: #666; /* 灰色文字 */
+            margin-bottom: 50px; /* 底部间距，拉开与按钮的距离 */
+        }
+        /* 开始体验按钮 */
+        .start-btn {
+            width: 200px; /* 宽度 */
+            height: 50px; /* 高度 */
+            font-size: 18px; /* 文字大小 */
+            color: #4a6fa5; /* 文字颜色 */
+            background: white; /* 白色背景 */
+            border: 2px solid #4a6fa5; /* 蓝色边框 */
+            border-radius: 25px; /* 圆角，使按钮更圆润 */
+            cursor: pointer; /* 鼠标悬停时显示手型 */
+            transition: all 0.3s; /* 过渡动画，使交互更平滑 */
+        }
+
+        /* 祝福窗口容器：用于承载所有动态创建的祝福窗口 */
+        .tips-container {
+            position: absolute; /* 绝对定位，覆盖整个屏幕 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* 允许点击穿透容器，不影响下层元素 */
+            z-index: 50; /* 层级低于启动页和结束页 */
+        }
+        /* 单个祝福窗口样式 */
+        .tip-window {
+            position: absolute; /* 绝对定位，用于随机位置摆放 */
+            width: 280px; /* 宽度 */
+            height: 100px; /* 高度 */
+            border-radius: 10px; /* 圆角 */
+            display: flex; /* 弹性布局，用于居中文字 */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+            transition: opacity 0.5s ease; /* 透明度过渡动画，关闭时平滑消失 */
+        }
+        /* 祝福文字样式 */
+        .tip-text {
+            font-size: 18px; /* 文字大小 */
+            color: #333; /* 深灰色文字 */
+            text-align: center; /* 文字居中 */
+            padding: 0 10px; /* 左右内边距，避免文字贴边 */
+        }
+
+        /* 结束页样式 */
+        .final-page {
+            position: absolute; /* 绝对定位，覆盖整个屏幕 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white; /* 白色背景 */
+            display: none; /* 默认隐藏，所有窗口关闭后显示 */
+            flex-direction: column; /* 垂直方向排列 */
+            align-items: center; /* 水平居中 */
+            justify-content: center; /* 垂直居中 */
+            z-index: 200; /* 层级最高，确保在最上层显示 */
+        }
+        /* 结束页文字 */
+        .final-text {
+            font-size: 22px; /* 文字大小 */
+            font-weight: bold; /* 加粗 */
+            background: lightpink; /* 浅粉色背景 */
+            padding: 15px 30px; /* 内边距 */
+            border-radius: 8px; /* 圆角 */
+            margin-bottom: 30px; /* 底部间距，拉开与按钮的距离 */
+        }
+        /* 退出按钮 */
+        .exit-btn {
+            width: 150px; /* 宽度 */
+            height: 45px; /* 高度 */
+            font-size: 16px; /* 文字大小 */
+            background: #4a6fa5; /* 蓝色背景 */
+            color: white; /* 白色文字 */
+            border: none; /* 去掉默认边框 */
+            border-radius: 22px; /* 圆角 */
+            cursor: pointer; /* 鼠标悬停时显示手型 */
+        }
+
+        /* 手机适配：当屏幕宽度小于768px时生效 */
+        @media (max-width: 768px) {
+            .tip-window {
+                width: 80vw; /* 窗口宽度占屏幕80%，适配不同手机 */
+                max-width: 280px; /* 最大宽度限制 */
+                height: 120px; /* 适当增加高度，避免文字拥挤 */
+            }
+            .main-title {
+                font-size: 20px; /* 缩小标题文字，适配手机屏幕 */
+            }
+            .final-text {
+                font-size: 18px; /* 缩小结束页文字 */
+                padding: 12px 20px; /* 减少内边距 */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 启动页：初始显示的页面 -->
+    <div class="start-page" id="startPage">
+        <div class="title">
+            <span class="gift">🎁</span> <!-- 礼物图标 -->
+            <span class="main-title">你收到了一份温柔提醒</span> <!-- 主标题 -->
+        </div>
+        <span class="sub-title">朋友为你准备了一些温暖的话语</span> <!-- 副标题 -->
+        <button class="start-btn" id="startBtn">开始体验</button> <!-- 开始按钮 -->
+    </div>
+
+    <!-- 祝福窗口容器：动态创建的祝福窗口会添加到这里 -->
+    <div class="tips-container" id="tipsContainer"></div>
+
+    <!-- 结束页：所有窗口关闭后显示 -->
+    <div class="final-page" id="finalPage">
+        <div class="final-text">谢谢观看我的好朋友</div> <!-- 结束页文字 -->
+        <button class="exit-btn" id="exitBtn">退出</button> <!-- 退出按钮 -->
+    </div>
+
+    <script>
+        // 获取页面元素（通过ID）
+        const startPage = document.getElementById('startPage'); // 启动页容器
+        const startBtn = document.getElementById('startBtn'); // 开始体验按钮
+        const tipsContainer = document.getElementById('tipsContainer'); // 祝福窗口容器
+        const finalPage = document.getElementById('finalPage'); // 结束页容器
+        const exitBtn = document.getElementById('exitBtn'); // 退出按钮
+
+        // 祝福语句列表：随机显示其中一条
+        const tips = [
+            '多喝水哦～', '保持微笑呀', '每天都要元气满满', '保持好心情', '好好爱自己',
+            '梦想成真', '顺顺利利', '早点休息', '愿所有烦恼都消失', '别熬夜',
+            '今天过得开心嘛', '天冷了，多穿衣服', '新的一天也要闪闪发光呀', '累了就停下来歇一歇',
+            '你的努力超棒的', '记得给生活加点甜', '脚步慢一点也没关系', '像阳光一样灿烂吧',
+            '小日子会越来越顺的', '照顾好自己呀'
+        ];
+        // 背景色列表：随机为窗口选择一种背景色
+        const bgColors = [
+            'lightpink', 'skyblue', 'lightgreen', 'lavender', 'lightyellow', 'plum',
+            'coral', 'bisque', 'aquamarine', 'mistyrose', 'honeydew', 'lavenderblush', 'oldlace'
+        ];
+
+        // 给开始按钮添加点击事件：点击后隐藏启动页，创建祝福窗口
+        startBtn.addEventListener('click', () => {
+            startPage.style.display = 'none'; // 隐藏启动页
+            createTipWindows(); // 调用函数创建祝福窗口
+        });
+
+        // 给退出按钮添加点击事件：关闭页面或刷新
+        exitBtn.addEventListener('click', () => {
+            // 微信浏览器中调用API关闭窗口
+            if (window.WeixinJSBridge) {
+                WeixinJSBridge.call('closeWindow');
+            } else {
+                // 其他浏览器中刷新页面（重置体验）
+                location.reload();
+            }
+        });
+
+        /**
+         * 创建所有祝福窗口
+         * 动态生成指定数量的窗口，随机位置、随机背景色、随机祝福文字
+         */
+        function createTipWindows() {
+            const windowCount = 50; // 窗口数量（手机适配，数量适中）
+            const screenWidth = window.innerWidth; // 获取屏幕宽度
+            const screenHeight = window.innerHeight; // 获取屏幕高度
+            tipsContainer.innerHTML = ''; // 清空容器（避免重复创建）
+
+            // 循环创建窗口
+            for (let i = 0; i < windowCount; i++) {
+                // 计算窗口最大可放置的left和top（避免窗口超出屏幕）
+                const maxLeft = screenWidth - 280; // 窗口宽度280px
+                const maxTop = screenHeight - 100; // 窗口高度100px
+                // 随机生成left和top值（窗口位置）
+                const left = Math.random() * maxLeft;
+                const top = Math.random() * maxTop;
+                // 随机选择一条祝福文字
+                const tipText = tips[Math.floor(Math.random() * tips.length)];
+                // 随机选择一种背景色
+                const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+
+                // 创建窗口元素
+                const tipWindow = document.createElement('div');
+                tipWindow.className = 'tip-window'; // 添加样式类
+                // 设置窗口位置、背景色
+                tipWindow.style.left = `${left}px`;
+                tipWindow.style.top = `${top}px`;
+                tipWindow.style.backgroundColor = bgColor;
+                // 设置窗口内容（祝福文字）
+                tipWindow.innerHTML = `<span class="tip-text">${tipText}</span>`;
+                // 将窗口添加到容器中
+                tipsContainer.appendChild(tipWindow);
+
+                // 控制窗口创建速度：除最后一个窗口外，每个窗口创建后停顿10ms
+                if (i < windowCount - 1) {
+                    awaitSleep(10);
+                }
+            }
+
+            // 所有窗口创建完成后，2秒（2000ms）后开始逐个关闭窗口
+            setTimeout(() => {
+                closeWindowsOneByOne(0); // 从第0个窗口开始关闭
+            }, 2000);
+        }
+
+        /**
+         * 逐个关闭窗口
+         * @param {number} index - 当前要关闭的窗口索引
+         */
+        function closeWindowsOneByOne(index) {
+            const allWindows = document.querySelectorAll('.tip-window'); // 获取所有祝福窗口
+            // 如果还有窗口未关闭
+            if (index < allWindows.length) {
+                // 让当前窗口透明度变为0（通过CSS过渡动画实现淡出效果）
+                allWindows[index].style.opacity = '0';
+                // 30ms后关闭下一个窗口（控制关闭速度）
+                setTimeout(() => {
+                    closeWindowsOneByOne(index + 1);
+                }, 30);
+            } else {
+                // 所有窗口关闭后，显示结束页
+                finalPage.style.display = 'flex';
+            }
+        }
+
+        /**
+         * 简易休眠函数（阻塞线程，控制窗口创建速度）
+         * @param {number} ms - 休眠时间（毫秒）
+         */
+        function awaitSleep(ms) {
+            const start = Date.now(); // 记录开始时间
+            // 循环等待，直到达到指定时间
+            while (Date.now() - start < ms) {}
+        }
+    </script>
+</body>
+</html>
