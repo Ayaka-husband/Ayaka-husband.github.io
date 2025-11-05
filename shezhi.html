@@ -76,21 +76,22 @@
         }
         .tip-window {
             position: absolute;
-            width: 70vw;
-            max-width: 280px;
-            height: 110px;
+            width: 60vw; /* 与JS中windowWidth对应，缩为屏幕60% */
+            max-width: 250px;
+            height: 100px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: opacity 0.6s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15); /* 加深阴影，区分窗口层次 */
+            border: 1px solid rgba(255,255,255,0.8); /* 加白色边框，增强边界感 */
         }
         .tip-text {
-            font-size: 16px;
+            font-size: 15px; /* 文字再缩小1px，避免换行拥挤 */
             color: #333;
             text-align: center;
-            padding: 0 15px;
+            padding: 0 12px;
         }
 
         /* 结束页样式 */
@@ -204,43 +205,70 @@
          * 对应Python中的create_tip_window函数 + start_experience中的循环创建逻辑
          */
         function createTipWindows() {
-            const windowCount = 20; // 窗口数量（比Python的200少，适配手机）
-            const screenWidth = window.innerWidth; // 屏幕宽度（对应Python中的main_window.winfo_screenwidth()）
-            const screenHeight = window.innerHeight; // 屏幕高度（对应Python中的main_window.winfo_screenheight()）
-            const windowWidth = Math.min(screenWidth * 0.7, 280); // 窗口宽度（动态计算，适配手机）
-            const windowHeight = 110; // 窗口高度
-            tipsContainer.innerHTML = ''; // 清空容器
+    // 1. 适配手机的参数设置（减少数量+缩小尺寸）
+    const windowCount = 15; // 进一步减少到15个（手机屏幕极限适配）
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    const windowWidth = Math.min(screenWidth * 0.6, 250); // 窗口宽度缩为屏幕60%（最大250px）
+    const windowHeight = 100; // 窗口高度缩小
+    const gap = 20; // 窗口之间的最小间距（20px，避免贴边拥挤）
+    tipsContainer.innerHTML = '';
+    const existingWindows = []; // 存储已创建窗口的位置信息，用于防重叠检查
 
-            // 循环创建窗口（对应Python中for _ in range(200)的循环）
-            for (let i = 0; i < windowCount; i++) {
-                // 计算随机位置（确保窗口在屏幕内，对应Python中的random.randint）
-                const maxLeft = screenWidth - windowWidth - 20;
-                const maxTop = screenHeight - windowHeight - 20;
-                const left = 10 + Math.random() * maxLeft;
-                const top = 10 + Math.random() * maxTop;
+    // 2. 循环创建窗口（带防重叠检查）
+    for (let i = 0; i < windowCount; ) { // 不自动i++，确保创建成功才计数
+        // 2.1 随机生成初始位置（避开屏幕边缘）
+        const maxLeft = screenWidth - windowWidth - gap * 2;
+        const maxTop = screenHeight - windowHeight - gap * 2;
+        const newLeft = gap + Math.random() * maxLeft;
+        const newTop = gap + Math.random() * maxTop;
 
-                // 随机选择文字和背景色（对应Python中的random.choice）
-                const tipText = tips[Math.floor(Math.random() * tips.length)];
-                const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
-
-                // 创建窗口元素（对应Python中的tk.Toplevel）
-                const tipWindow = document.createElement('div');
-                tipWindow.className = 'tip-window';
-                tipWindow.style.left = `${left}px`;
-                tipWindow.style.top = `${top}px`;
-                tipWindow.style.width = `${windowWidth}px`;
-                tipWindow.style.height = `${windowHeight}px`;
-                tipWindow.style.backgroundColor = bgColor;
-                tipWindow.innerHTML = `<span class="tip-text">${tipText}</span>`; // 对应Python中的tk.Label
-                tipsContainer.appendChild(tipWindow);
-
-                // 控制创建速度（对应Python中的time.sleep(0.01)）
-                if (i < windowCount - 1) awaitSleep(20);
+        // 2.2 检查新窗口是否与已存在窗口重叠
+        let isOverlap = false;
+        for (const win of existingWindows) {
+            // 计算两个窗口的间距（左右、上下）
+            const leftDiff = Math.abs(newLeft - win.left);
+            const topDiff = Math.abs(newTop - win.top);
+            // 若间距小于“窗口尺寸+最小间距”，判定为重叠
+            if (leftDiff < windowWidth + gap && topDiff < windowHeight + gap) {
+                isOverlap = true;
+                break; // 重叠则跳出循环，重新生成位置
             }
-
-            // 2秒后开始关闭窗口（对应Python中的main_window.after(2000, ...)）
-            setTimeout(() => closeWindowsOneByOne(0), 2000);
         }
+
+        // 2.3 若不重叠，创建窗口并记录位置
+        if (!isOverlap) {
+            // 随机选择文字和背景色
+            const tipText = tips[Math.floor(Math.random() * tips.length)];
+            const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+
+            // 创建窗口元素
+            const tipWindow = document.createElement('div');
+            tipWindow.className = 'tip-window';
+            tipWindow.style.left = `${newLeft}px`;
+            tipWindow.style.top = `${newTop}px`;
+            tipWindow.style.width = `${windowWidth}px`;
+            tipWindow.style.height = `${windowHeight}px`;
+            tipWindow.style.backgroundColor = bgColor;
+            tipWindow.innerHTML = `<span class="tip-text">${tipText}</span>`;
+            tipsContainer.appendChild(tipWindow);
+
+            // 记录当前窗口位置，用于后续重叠检查
+            existingWindows.push({ left: newLeft, top: newTop });
+            i++; // 只有创建成功才计数，避免无限循环
+
+            // 控制创建速度（手机上更慢，避免卡顿）
+            if (i < windowCount) {
+                awaitSleep(50);
+            }
+        }
+    }
+
+    // 3. 2秒后开始关闭窗口
+    setTimeout(() => {
+        closeWindowsOneByOne(0);
+    }, 2000);
+}
 
         /**
          * 逐个关闭窗口
