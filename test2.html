@@ -83,14 +83,15 @@
         }
         /* 单个祝福窗口样式 */
         .tip-window {
-            position: absolute; /* 绝对定位，用于随机位置摆放 */
-            width: 280px; /* 宽度 */
-            height: 100px; /* 高度 */
-            border-radius: 10px; /* 圆角 */
-            display: flex; /* 弹性布局，用于居中文字 */
-            align-items: center; /* 垂直居中 */
-            justify-content: center; /* 水平居中 */
-            transition: opacity 0.5s ease; /* 透明度过渡动画，关闭时平滑消失 */
+            position: absolute;
+            width: 70vw; /* 占屏幕宽度70%，适配手机 */
+            max-width: 280px;
+            height: 100px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
         }
         /* 祝福文字样式 */
         .tip-text {
@@ -125,13 +126,13 @@
         }
         /* 退出按钮 */
         .exit-btn {
-            width: 150px; /* 宽度 */
-            height: 45px; /* 高度 */
-            font-size: 16px; /* 文字大小 */
+            width: 120px; /* 宽度 */
+            height: 40px; /* 高度 */
+            font-size: 14px; /* 文字大小 */
             background: #4a6fa5; /* 蓝色背景 */
             color: white; /* 白色文字 */
             border: none; /* 去掉默认边框 */
-            border-radius: 22px; /* 圆角 */
+            border-radius: 20px; /* 圆角 */
             cursor: pointer; /* 鼠标悬停时显示手型 */
         }
 
@@ -216,7 +217,7 @@
          * 动态生成指定数量的窗口，随机位置、随机背景色、随机祝福文字
          */
         function createTipWindows() {
-            const windowCount = 50; // 窗口数量（手机适配，数量适中）
+            const windowCount = 30; // 窗口数量（手机适配，数量适中）
             const screenWidth = window.innerWidth; // 获取屏幕宽度
             const screenHeight = window.innerHeight; // 获取屏幕高度
             tipsContainer.innerHTML = ''; // 清空容器（避免重复创建）
