@@ -2,130 +2,188 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>提示窗口 - 自动关闭</title>
+    <title>丝滑动画提示窗口</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            overflow: hidden; /* 隐藏滚动条，避免窗口超出时出现滚动 */
+            background: #f0f0f0;
+        }
         .tip-window {
             position: fixed;
-            width: 300px;
-            height: 90px;
+            padding: 20px;
+            min-width: 200px;
+            max-width: 300px;
+            min-height: 80px;
             display: flex;
             justify-content: center;
             align-items: center;
             font-family: "微软雅黑", sans-serif;
             font-size: 16px;
             text-align: center;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            transition: opacity 0.3s, transform 0.3s;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer; /* 增加交互感 */
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             opacity: 0;
-            transform: scale(0.8);
+            transform: scale(0.5) rotate(-5deg);
+            z-index: 10;
         }
         .tip-window.show {
             opacity: 1;
-            transform: scale(1);
+            transform: scale(1) rotate(0);
+        }
+        .tip-window.fly-out {
+            opacity: 0;
+            transform: scale(0.8) translateY(-50px) rotate(5deg);
         }
         .final-window {
             position: fixed;
-            width: 300px;
-            height: 90px;
-            background-color: lightpink;
+            width: 350px;
+            height: 120px;
+            background-color: #ff8fa3;
             display: flex;
             justify-content: center;
             align-items: center;
             font-family: "微软雅黑", sans-serif;
-            font-size: 18px;
+            font-size: 24px;
             font-weight: bold;
             text-align: center;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
             left: 50%;
             top: 50%;
-            transform: translate(-50%, -50%);
-            transition: opacity 0.5s;
+            transform: translate(-50%, -50%) scale(0.8);
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 100;
+        }
+        .final-window.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
         }
     </style>
 </head>
 <body>
     <script>
+        // 提示语列表（增加更多内容）
         const tips = [
             '多喝水哦~', '保持微笑呀', '每天都要元气满满',
             '记得吃水果', '保持好心情', '好好爱自己', '我想你了',
             '梦想成真', '期待下一次见面', '顺顺利利', '早点休息',
-            '愿所有烦恼都消失', '别熬夜', '今天过得开心嘛', '天冷了，多穿衣服'
+            '愿所有烦恼都消失', '别熬夜', '今天过得开心嘛', '天冷了，多穿衣服',
+            '加油，你很棒', '享受当下', '平安喜乐', '万事胜意', '心向阳光',
+            '每天进步一点点', '照顾好自己', '好运连连', '笑口常开', '平安健康'
         ];
-        const bgColors = [
-            'lightpink', 'skyblue', 'lightgreen', 'lavender',
-            'lightyellow', 'plum', 'coral', 'bisque', 'aquamarine',
-            'mistyrose', 'honeydew', 'lavenderblush', 'oldlace'
-        ];
-        const allWindows = [];
-        const totalWindows = 200;
-        const delayBetweenPop = 30;
-        const finalWindowDuration = 1; // 最终窗口显示的时间（毫秒）
 
+        // 更多柔和的背景色
+        const bgColors = [
+            '#ffccd5', '#c8e6c9', '#bbdefb', '#e1bee7', '#fff9c4',
+            '#e0f7fa', '#f3e5f5', '#ffe0b2', '#d7ccc8', '#b2ebf2',
+            '#f8bbd0', '#dcedc8', '#90caf9', '#f1f8e9', '#ede7f6'
+        ];
+
+        // 动画相关配置
+        const config = {
+            totalWindows: 300,        // 更多窗口，充满界面
+            delayBetweenPop: 15,      // 弹出间隔更短，更连贯
+            popDuration: 0.5,         // 弹出动画时长（秒）
+            closeDelay: 10,           // 关闭间隔
+            finalWindowDuration: 2000 // 最终窗口显示时间
+        };
+
+        const allWindows = [];
+
+        // 创建单个提示窗口（带多种动画效果）
         function createTipWindow() {
-            const windowWidth = 300;
-            const windowHeight = 90;
+            // 随机窗口大小，增加变化感
+            const windowWidth = 200 + Math.random() * 150;
+            const windowHeight = 80 + Math.random() * 50;
+
+            // 随机位置，确保充满整个界面（包括边缘）
             const x = Math.random() * (window.innerWidth - windowWidth);
             const y = Math.random() * (window.innerHeight - windowHeight);
+
+            // 随机旋转角度（轻微）
+            const rotate = (Math.random() - 0.5) * 10;
 
             const tipWindow = document.createElement('div');
             tipWindow.className = 'tip-window';
             tipWindow.style.left = `${x}px`;
             tipWindow.style.top = `${y}px`;
+            tipWindow.style.width = `${windowWidth}px`;
+            tipWindow.style.height = `${windowHeight}px`;
             tipWindow.style.backgroundColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+            tipWindow.style.transform = `scale(0.5) rotate(${rotate}deg)`; // 初始旋转
             tipWindow.textContent = tips[Math.floor(Math.random() * tips.length)];
+
             document.body.appendChild(tipWindow);
 
+            // 触发弹出动画
             setTimeout(() => {
                 tipWindow.classList.add('show');
-            }, 10);
+            }, 50);
 
             return tipWindow;
         }
 
+        // 逐个创建窗口（充满界面）
         function createWindowsOneByOne(index = 0) {
-            if (index < totalWindows) {
+            if (index < config.totalWindows) {
                 setTimeout(() => {
                     const window = createTipWindow();
                     allWindows.push(window);
                     createWindowsOneByOne(index + 1);
-                }, index * delayBetweenPop);
+                }, index * config.delayBetweenPop);
             } else {
-                setTimeout(() => closeWindowsOneByOne(), 2000);
+                // 所有窗口创建完成后，等待1秒再开始关闭
+                setTimeout(() => closeWindowsOneByOne(), 1000);
             }
         }
 
+        // 逐个关闭窗口（带飞出动画）
         function closeWindowsOneByOne(index = 0) {
             if (index < allWindows.length) {
                 const window = allWindows[index];
-                window.style.opacity = 0;
-                setTimeout(() => window.remove(), 300);
-                setTimeout(() => closeWindowsOneByOne(index + 1), 10);
+                // 添加飞出动画类
+                window.classList.add('fly-out');
+                // 动画结束后移除元素
+                setTimeout(() => window.remove(), 500);
+                // 继续关闭下一个
+                setTimeout(() => closeWindowsOneByOne(index + 1), config.closeDelay);
             } else {
                 createFinalWindow();
             }
         }
 
+        // 创建最终窗口（带放大动画）
         function createFinalWindow() {
             const finalWindow = document.createElement('div');
             finalWindow.className = 'final-window';
             finalWindow.textContent = '我想你了';
             document.body.appendChild(finalWindow);
 
-            // 最终窗口显示一段时间后，自动关闭页面
+            // 触发最终窗口动画
             setTimeout(() => {
-                // 先让最终窗口淡出
+                finalWindow.classList.add('show');
+            }, 100);
+
+            // 最终窗口显示后自动关闭
+            setTimeout(() => {
+                finalWindow.style.transform = 'translate(-50%, -50%) scale(0.8)';
                 finalWindow.style.opacity = 0;
-                // 等待淡出动画结束后关闭页面
                 setTimeout(() => {
-                    window.close(); // 关闭当前页面
-                }, 500);
-            }, finalWindowDuration);
+                    window.close();
+                }, 800);
+            }, config.finalWindowDuration);
         }
 
+        // 启动程序
         createWindowsOneByOne();
     </script>
 </body>
-
 </html>
