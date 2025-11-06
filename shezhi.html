@@ -2,296 +2,205 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>温柔提醒（Python与HTML逻辑合并版）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>温馨提示</title>
     <style>
-        /* 基础样式重置 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "微软雅黑", sans-serif;
-        }
-        body {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background: #fff;
-        }
-
-        /* 启动页样式 */
-        .start-page {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-        }
-        .title {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .gift {
-            font-size: 40px;
-            margin-right: 15px;
-        }
-        .main-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4a6fa5;
-        }
-        .sub-title {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 50px;
-        }
-        .start-btn {
-            width: 200px;
-            height: 50px;
-            font-size: 18px;
-            color: #4a6fa5;
-            background: white;
-            border: 2px solid #4a6fa5;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        /* 祝福窗口容器 */
-        .tips-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 50;
-        }
         .tip-window {
             position: absolute;
-            width: 60vw; /* 与JS中windowWidth对应，缩为屏幕60% */
-            max-width: 250px;
-            height: 100px;
-            border-radius: 12px;
+            width: 300px;
+            height: 90px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.6s;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.15); /* 加深阴影，区分窗口层次 */
-            border: 1px solid rgba(255,255,255,0.8); /* 加白色边框，增强边界感 */
-        }
-        .tip-text {
-            font-size: 15px; /* 文字再缩小1px，避免换行拥挤 */
-            color: #333;
-            text-align: center;
-            padding: 0 12px;
+            transition: opacity 0.3s ease;
         }
 
-        /* 结束页样式 */
-        .final-page {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            display: none;
+        .tip-text {
+            font-family: '微软雅黑', sans-serif;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .final-window {
+            position: fixed;
+            width: 300px;
+            height: 150px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 2000;
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 200;
-        }
-        .final-text {
-            font-size: 22px;
-            font-weight: bold;
-            background: lightpink;
-            padding: 15px 30px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-        }
-        .exit-btn {
-            width: 120px;
-            height: 40px;
-            font-size: 14px;
-            background: #4a6fa5;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
         }
 
-        /* 手机适配 */
-        @media (max-width: 768px) {
-            .tip-window {
-                width: 80vw;
-                height: 120px;
-            }
-            .main-title {
-                font-size: 20px;
-            }
-            .final-text {
-                font-size: 18px;
-                padding: 12px 20px;
-            }
+        .final-text {
+            font-family: '微软雅黑', sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        #exitBtn {
+            font-family: '微软雅黑', sans-serif;
+            font-size: 12px;
+            padding: 5px 15px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <!-- 启动页：对应Python中的create_start_window函数 -->
-    <div class="start-page" id="startPage">
-        <div class="title">
-            <span class="gift">🎁</span>
-            <span class="main-title">你收到了一份温柔提醒</span>
-        </div>
-        <span class="sub-title">朋友为你准备了一些温暖的话语</span>
-        <button class="start-btn" id="startBtn">开始体验</button>
-    </div>
-
-    <!-- 祝福窗口容器：对应Python中动态创建的Toplevel窗口容器 -->
-    <div class="tips-container" id="tipsContainer"></div>
-
-    <!-- 结束页：对应Python中的create_final_window函数 -->
-    <div class="final-page" id="finalPage">
-        <div class="final-text">谢谢观看我的好朋友</div>
-        <button class="exit-btn" id="exitBtn">退出</button>
-    </div>
-
     <script>
-        // ===== 对应Python中的变量定义 =====
-        // 获取页面元素（类似Python中的tkinter组件对象）
-        const startPage = document.getElementById('startPage');
-        const startBtn = document.getElementById('startBtn');
-        const tipsContainer = document.getElementById('tipsContainer');
-        const finalPage = document.getElementById('finalPage');
-        const exitBtn = document.getElementById('exitBtn');
-
-        // 祝福语句列表（与Python中的tips列表完全一致）
+        // 提示文本数组，与原Python代码保持一致
         const tips = [
-            '多喝水哦～', '保持微笑呀', '每天都要元气满满', '保持好心情', '好好爱自己',
-            '梦想成真', '顺顺利利', '早点休息', '愿所有烦恼都消失', '别熬夜',
-            '今天过得开心嘛', '天冷了，多穿衣服', '新的一天也要闪闪发光呀', '累了就停下来歇一歇',
+            '多喝水哦～', '保持微笑呀', '每天都要元气满满',
+            '保持好心情', '好好爱自己', '梦想成真', '顺顺利利',
+            '早点休息', '愿所有烦恼都消失', '别熬夜', '今天过得开心嘛',
+            '天冷了，多穿衣服', '新的一天也要闪闪发光呀', '累了就停下来歇一歇',
             '你的努力超棒的', '记得给生活加点甜', '脚步慢一点也没关系', '像阳光一样灿烂吧',
             '小日子会越来越顺的', '照顾好自己呀'
         ];
-        // 背景色列表（与Python中的bg_colors列表完全一致）
+
+        // 背景颜色数组，与原Python代码保持一致
         const bgColors = [
-            'lightpink', 'skyblue', 'lightgreen', 'lavender', 'lightyellow', 'plum',
-            'coral', 'bisque', 'aquamarine', 'mistyrose', 'honeydew', 'lavenderblush', 'oldlace'
+            'lightpink', 'skyblue', 'lightgreen', 'lavender',
+            'lightyellow', 'plum', 'coral', 'bisque', 'aquamarine',
+            'mistyrose', 'honeydew', 'lavenderblush', 'oldlace'
         ];
 
-        // ===== 对应Python中的事件绑定 =====
-        // 开始按钮点击事件（对应Python中start_btn的command参数）
-        startBtn.addEventListener('click', () => {
-            startPage.style.display = 'none'; // 隐藏启动页（对应Python中start_window.destroy()）
-            createTipWindows(); // 创建祝福窗口
-        });
+        const allWindows = [];
+        const totalWindows = 200; // 总窗口数量
+        const popDelay = 10; // 每个窗口弹出的间隔时间(毫秒)
 
-        // 退出按钮点击事件（对应Python中exit按钮的command参数）
-        exitBtn.addEventListener('click', () => {
-            if (window.WeixinJSBridge) WeixinJSBridge.call('closeWindow'); // 微信中关闭窗口
-            else location.reload(); // 其他浏览器刷新重置
-        });
+        // 创建提示窗口
+        function createTipWindow() {
+            const windowWidth = 300;
+            const windowHeight = 90;
+            // 随机位置
+            const x = Math.floor(Math.random() * 1530) - 30;
+            const y = Math.floor(Math.random() * 920) - 20;
 
-        // ===== 核心逻辑函数（与Python函数一一对应） =====
-        /**
-         * 创建所有祝福窗口
-         * 对应Python中的create_tip_window函数 + start_experience中的循环创建逻辑
-         */
-        function createTipWindows() {
-    // 1. 适配手机的参数设置（减少数量+缩小尺寸）
-    const windowCount = 15; // 进一步减少到15个（手机屏幕极限适配）
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-    const windowWidth = Math.min(screenWidth * 0.6, 250); // 窗口宽度缩为屏幕60%（最大250px）
-    const windowHeight = 100; // 窗口高度缩小
-    const gap = 20; // 窗口之间的最小间距（20px，避免贴边拥挤）
-    tipsContainer.innerHTML = '';
-    const existingWindows = []; // 存储已创建窗口的位置信息，用于防重叠检查
+            const div = document.createElement('div');
+            div.className = 'tip-window';
+            div.style.left = `${x}px`;
+            div.style.top = `${y}px`;
+            div.style.opacity = '0'; // 初始透明
 
-    // 2. 循环创建窗口（带防重叠检查）
-    for (let i = 0; i < windowCount; ) { // 不自动i++，确保创建成功才计数
-        // 2.1 随机生成初始位置（避开屏幕边缘）
-        const maxLeft = screenWidth - windowWidth - gap * 2;
-        const maxTop = screenHeight - windowHeight - gap * 2;
-        const newLeft = gap + Math.random() * maxLeft;
-        const newTop = gap + Math.random() * maxTop;
+            // 随机选择提示文本和背景颜色
+            const tip = tips[Math.floor(Math.random() * tips.length)];
+            const bg = bgColors[Math.floor(Math.random() * bgColors.length)];
 
-        // 2.2 检查新窗口是否与已存在窗口重叠
-        let isOverlap = false;
-        for (const win of existingWindows) {
-            // 计算两个窗口的间距（左右、上下）
-            const leftDiff = Math.abs(newLeft - win.left);
-            const topDiff = Math.abs(newTop - win.top);
-            // 若间距小于“窗口尺寸+最小间距”，判定为重叠
-            if (leftDiff < windowWidth + gap && topDiff < windowHeight + gap) {
-                isOverlap = true;
-                break; // 重叠则跳出循环，重新生成位置
-            }
+            div.style.backgroundColor = bg;
+
+            const textDiv = document.createElement('div');
+            textDiv.className = 'tip-text';
+            textDiv.textContent = tip;
+
+            div.appendChild(textDiv);
+            document.body.appendChild(div);
+
+            // 淡入效果
+            setTimeout(() => {
+                div.style.opacity = '1';
+            }, 10);
+
+            return div;
         }
 
-        // 2.3 若不重叠，创建窗口并记录位置
-        if (!isOverlap) {
-            // 随机选择文字和背景色
-            const tipText = tips[Math.floor(Math.random() * tips.length)];
-            const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
-
-            // 创建窗口元素
-            const tipWindow = document.createElement('div');
-            tipWindow.className = 'tip-window';
-            tipWindow.style.left = `${newLeft}px`;
-            tipWindow.style.top = `${newTop}px`;
-            tipWindow.style.width = `${windowWidth}px`;
-            tipWindow.style.height = `${windowHeight}px`;
-            tipWindow.style.backgroundColor = bgColor;
-            tipWindow.innerHTML = `<span class="tip-text">${tipText}</span>`;
-            tipsContainer.appendChild(tipWindow);
-
-            // 记录当前窗口位置，用于后续重叠检查
-            existingWindows.push({ left: newLeft, top: newTop });
-            i++; // 只有创建成功才计数，避免无限循环
-
-            // 控制创建速度（手机上更慢，避免卡顿）
-            if (i < windowCount) {
-                awaitSleep(50);
-            }
-        }
-    }
-
-    // 3. 2秒后开始关闭窗口
-    setTimeout(() => {
-        closeWindowsOneByOne(0);
-    }, 2000);
-}
-
-        /**
-         * 逐个关闭窗口
-         * 完全对应Python中的close_windows_one_by_one函数
-         */
-        function closeWindowsOneByOne(index) {
-            const allWindows = document.querySelectorAll('.tip-window'); // 获取所有窗口
-            if (index < allWindows.length) {
-                allWindows[index].style.opacity = '0'; // 淡出效果（对应Python中的window.destroy()）
-                setTimeout(() => closeWindowsOneByOne(index + 1), 30); // 递归关闭下一个
+        // 逐个创建窗口
+        function createWindowsOneByOne(index = 0) {
+            if (index < totalWindows) {
+                const window = createTipWindow();
+                allWindows.push(window);
+                // 延迟创建下一个窗口
+                setTimeout(() => {
+                    createWindowsOneByOne(index + 1);
+                }, popDelay);
             } else {
-                finalPage.style.display = 'flex'; // 显示结束页（对应Python中的create_final_window）
+                // 所有窗口创建完成后，等待2秒开始关闭
+                setTimeout(() => {
+                    closeWindowsOneByOne(0, 10);
+                }, 2000);
             }
         }
 
-        /**
-         * 休眠函数
-         * 对应Python中的time.sleep函数
-         */
-        function awaitSleep(ms) {
-            const start = Date.now();
-            while (Date.now() - start < ms) {}
+        // 逐个关闭窗口
+        function closeWindowsOneByOne(index = 0, delay = 10) {
+            if (index < allWindows.length) {
+                const window = allWindows[index];
+                if (window && window.parentNode) {
+                    // 淡出效果
+                    window.style.opacity = '0';
+                    setTimeout(() => {
+                        document.body.removeChild(window);
+                    }, 300); // 等待淡出动画完成
+                }
+                setTimeout(() => {
+                    closeWindowsOneByOne(index + 1, delay);
+                }, delay);
+            } else {
+                // 所有窗口关闭后创建最终窗口
+                createFinalWindow();
+            }
         }
+
+        // 创建最终窗口
+        function createFinalWindow() {
+            const finalWidth = 300;
+            const finalHeight = 150;
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const x = (screenWidth - finalWidth) / 2;
+            const y = (screenHeight - finalHeight) / 2;
+
+            const div = document.createElement('div');
+            div.className = 'final-window';
+            div.style.left = `${x}px`;
+            div.style.top = `${y}px`;
+            div.style.backgroundColor = 'lightpink';
+            div.style.opacity = '0';
+
+            const textDiv = document.createElement('div');
+            textDiv.className = 'final-text';
+            textDiv.textContent = '谢谢观看我的好朋友';
+
+            const exitBtn = document.createElement('button');
+            exitBtn.id = 'exitBtn';
+            exitBtn.textContent = '退出';
+            exitBtn.onclick = () => {
+                if (div.parentNode) {
+                    div.style.opacity = '0';
+                    setTimeout(() => {
+                        document.body.removeChild(div);
+                    }, 300);
+                }
+            };
+
+            div.appendChild(textDiv);
+            div.appendChild(exitBtn);
+            document.body.appendChild(div);
+
+            // 淡入效果
+            setTimeout(() => {
+                div.style.opacity = '1';
+            }, 10);
+        }
+
+        // 启动程序
+        function main() {
+            // 开始逐个创建窗口
+            createWindowsOneByOne();
+        }
+
+        main();
     </script>
 </body>
 </html>
