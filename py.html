@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>提示窗口 - 自动关闭</title>
+    <style>
+        .tip-window {
+            position: fixed;
+            width: 300px;
+            height: 90px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: "微软雅黑", sans-serif;
+            font-size: 16px;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            transition: opacity 0.3s, transform 0.3s;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        .tip-window.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .final-window {
+            position: fixed;
+            width: 300px;
+            height: 90px;
+            background-color: lightpink;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: "微软雅黑", sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        const tips = [
+            '多喝水哦~', '保持微笑呀', '每天都要元气满满',
+            '记得吃水果', '保持好心情', '好好爱自己', '我想你了',
+            '梦想成真', '期待下一次见面', '顺顺利利', '早点休息',
+            '愿所有烦恼都消失', '别熬夜', '今天过得开心嘛', '天冷了，多穿衣服'
+        ];
+        const bgColors = [
+            'lightpink', 'skyblue', 'lightgreen', 'lavender',
+            'lightyellow', 'plum', 'coral', 'bisque', 'aquamarine',
+            'mistyrose', 'honeydew', 'lavenderblush', 'oldlace'
+        ];
+        const allWindows = [];
+        const totalWindows = 200;
+        const delayBetweenPop = 30;
+        const finalWindowDuration = 2000; // 最终窗口显示的时间（毫秒）
+
+        function createTipWindow() {
+            const windowWidth = 300;
+            const windowHeight = 90;
+            const x = Math.random() * (window.innerWidth - windowWidth);
+            const y = Math.random() * (window.innerHeight - windowHeight);
+
+            const tipWindow = document.createElement('div');
+            tipWindow.className = 'tip-window';
+            tipWindow.style.left = `${x}px`;
+            tipWindow.style.top = `${y}px`;
+            tipWindow.style.backgroundColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+            tipWindow.textContent = tips[Math.floor(Math.random() * tips.length)];
+            document.body.appendChild(tipWindow);
+
+            setTimeout(() => {
+                tipWindow.classList.add('show');
+            }, 10);
+
+            return tipWindow;
+        }
+
+        function createWindowsOneByOne(index = 0) {
+            if (index < totalWindows) {
+                setTimeout(() => {
+                    const window = createTipWindow();
+                    allWindows.push(window);
+                    createWindowsOneByOne(index + 1);
+                }, index * delayBetweenPop);
+            } else {
+                setTimeout(() => closeWindowsOneByOne(), 2000);
+            }
+        }
+
+        function closeWindowsOneByOne(index = 0) {
+            if (index < allWindows.length) {
+                const window = allWindows[index];
+                window.style.opacity = 0;
+                setTimeout(() => window.remove(), 300);
+                setTimeout(() => closeWindowsOneByOne(index + 1), 10);
+            } else {
+                createFinalWindow();
+            }
+        }
+
+        function createFinalWindow() {
+            const finalWindow = document.createElement('div');
+            finalWindow.className = 'final-window';
+            finalWindow.textContent = '我想你了';
+            document.body.appendChild(finalWindow);
+
+            // 最终窗口显示一段时间后，自动关闭页面
+            setTimeout(() => {
+                // 先让最终窗口淡出
+                finalWindow.style.opacity = 0;
+                // 等待淡出动画结束后关闭页面
+                setTimeout(() => {
+                    window.close(); // 关闭当前页面
+                }, 500);
+            }, finalWindowDuration);
+        }
+
+        createWindowsOneByOne();
+    </script>
+</body>
+</html>
