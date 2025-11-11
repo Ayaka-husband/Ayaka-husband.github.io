@@ -104,17 +104,18 @@
         ];
 
         const allWindows = [];
-        const totalWindows = 100; // 减少窗口数量，避免手机性能压力
-        const popDelay = 20; // 增加间隔，适应手机加载速度
+        const totalWindows = 100; // 窗口数量
+        const popDelay = 50; // 窗口弹出间隔（毫秒），数值越大弹出越慢
+        const closeDelay = 30; // 窗口关闭间隔（毫秒），数值越大关闭越慢
 
-        // 创建提示窗口（适配手机屏幕）
+        // 创建提示窗口（适配手机屏幕，且偏向左侧）
         function createTipWindow() {
             // 获取屏幕实际宽度（减去安全边距）
             const screenWidth = window.innerWidth - 40;
             const screenHeight = window.innerHeight - 40;
 
-            // 随机位置（确保在屏幕内）
-            const x = Math.floor(Math.random() * screenWidth) - 20;
+            // 随机位置偏向左侧（x轴范围调整为更靠左）
+            const x = Math.floor(Math.random() * (screenWidth * 0.7)) - 20; // 限制在屏幕左侧70%区域
             const y = Math.floor(Math.random() * screenHeight) - 20;
 
             const div = document.createElement('div');
@@ -149,20 +150,20 @@
             if (index < totalWindows) {
                 const window = createTipWindow();
                 allWindows.push(window);
-                // 延迟创建下一个窗口
+                // 延迟创建下一个窗口（popDelay越大，弹出越慢）
                 setTimeout(() => {
                     createWindowsOneByOne(index + 1);
                 }, popDelay);
             } else {
                 // 所有窗口创建完成后，等待2秒开始关闭
                 setTimeout(() => {
-                    closeWindowsOneByOne(0, 20); // 增加关闭间隔
+                    closeWindowsOneByOne(0, closeDelay); // 关闭间隔
                 }, 2000);
             }
         }
 
         // 逐个关闭窗口
-        function closeWindowsOneByOne(index = 0, delay = 20) {
+        function closeWindowsOneByOne(index = 0, delay = closeDelay) {
             if (index < allWindows.length) {
                 const window = allWindows[index];
                 if (window && window.parentNode) {
