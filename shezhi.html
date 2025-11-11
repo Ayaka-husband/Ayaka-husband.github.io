@@ -2,16 +2,30 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>温馨提示</title>
     <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* 提示窗口样式 - 自适应大小 */
         .tip-window {
             position: absolute;
-            width: 300px;
-            height: 90px;
-            padding: 10px;
+            width: 80%; /* 占屏幕宽度的80% */
+            max-width: 300px; /* 最大不超过300px */
+            height: auto; /* 高度自适应内容 */
+            padding: 15px 10px;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             z-index: 1000;
             display: flex;
@@ -21,19 +35,22 @@
         }
 
         .tip-text {
-            font-family: '微软雅黑', sans-serif;
+            font-family: '微软雅黑', -apple-system, BlinkMacSystemFont, sans-serif;
             font-size: 16px;
             text-align: center;
+            line-height: 1.5;
         }
 
+        /* 最终窗口样式 */
         .final-window {
             position: fixed;
-            width: 300px;
-            height: 150px;
-            padding: 10px;
+            width: 85%; /* 占屏幕宽度的85% */
+            max-width: 300px;
+            height: auto;
+            padding: 20px 15px;
             border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             z-index: 2000;
             display: flex;
             flex-direction: column;
@@ -42,24 +59,34 @@
         }
 
         .final-text {
-            font-family: '微软雅黑', sans-serif;
+            font-family: '微软雅黑', -apple-system, BlinkMacSystemFont, sans-serif;
             font-size: 18px;
             font-weight: bold;
             text-align: center;
             margin-bottom: 15px;
+            line-height: 1.6;
         }
 
         #exitBtn {
-            font-family: '微软雅黑', sans-serif;
-            font-size: 12px;
-            padding: 5px 15px;
+            font-family: '微软雅黑', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 14px;
+            padding: 8px 20px;
             cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff8fa3;
+            color: white;
+            transition: background-color 0.2s;
+        }
+
+        #exitBtn:hover {
+            background-color: #ff6b8b;
         }
     </style>
 </head>
 <body>
     <script>
-        // 提示文本数组，与原Python代码保持一致
+        // 提示文本数组
         const tips = [
             '多喝水哦～', '保持微笑呀', '每天都要元气满满',
             '保持好心情', '好好爱自己', '梦想成真', '顺顺利利',
@@ -69,7 +96,7 @@
             '小日子会越来越顺的', '照顾好自己呀'
         ];
 
-        // 背景颜色数组，与原Python代码保持一致
+        // 背景颜色数组
         const bgColors = [
             'lightpink', 'skyblue', 'lightgreen', 'lavender',
             'lightyellow', 'plum', 'coral', 'bisque', 'aquamarine',
@@ -77,22 +104,24 @@
         ];
 
         const allWindows = [];
-        const totalWindows = 200; // 总窗口数量
-        const popDelay = 500; // 每个窗口弹出的间隔时间(毫秒)
+        const totalWindows = 100; // 减少窗口数量，避免手机性能压力
+        const popDelay = 20; // 增加间隔，适应手机加载速度
 
-        // 创建提示窗口
+        // 创建提示窗口（适配手机屏幕）
         function createTipWindow() {
-            const windowWidth = 300;
-            const windowHeight = 90;
-            // 随机位置
-            const x = Math.floor(Math.random() * 1530) - 30;
-            const y = Math.floor(Math.random() * 920) - 20;
+            // 获取屏幕实际宽度（减去安全边距）
+            const screenWidth = window.innerWidth - 40;
+            const screenHeight = window.innerHeight - 40;
+
+            // 随机位置（确保在屏幕内）
+            const x = Math.floor(Math.random() * screenWidth) - 20;
+            const y = Math.floor(Math.random() * screenHeight) - 20;
 
             const div = document.createElement('div');
             div.className = 'tip-window';
             div.style.left = `${x}px`;
             div.style.top = `${y}px`;
-            div.style.opacity = '0'; // 初始透明
+            div.style.opacity = '0';
 
             // 随机选择提示文本和背景颜色
             const tip = tips[Math.floor(Math.random() * tips.length)];
@@ -127,13 +156,13 @@
             } else {
                 // 所有窗口创建完成后，等待2秒开始关闭
                 setTimeout(() => {
-                    closeWindowsOneByOne(0, 10);
+                    closeWindowsOneByOne(0, 20); // 增加关闭间隔
                 }, 2000);
             }
         }
 
         // 逐个关闭窗口
-        function closeWindowsOneByOne(index = 0, delay = 10) {
+        function closeWindowsOneByOne(index = 0, delay = 20) {
             if (index < allWindows.length) {
                 const window = allWindows[index];
                 if (window && window.parentNode) {
@@ -141,7 +170,7 @@
                     window.style.opacity = '0';
                     setTimeout(() => {
                         document.body.removeChild(window);
-                    }, 300); // 等待淡出动画完成
+                    }, 300);
                 }
                 setTimeout(() => {
                     closeWindowsOneByOne(index + 1, delay);
@@ -152,14 +181,12 @@
             }
         }
 
-        // 创建最终窗口
+        // 创建最终窗口（居中显示）
         function createFinalWindow() {
-            const finalWidth = 300;
-            const finalHeight = 150;
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
-            const x = (screenWidth - finalWidth) / 2;
-            const y = (screenHeight - finalHeight) / 2;
+            const x = (screenWidth * 0.5) - (screenWidth * 0.85 / 2); // 水平居中
+            const y = (screenHeight * 0.5) - 75; // 垂直居中
 
             const div = document.createElement('div');
             div.className = 'final-window';
