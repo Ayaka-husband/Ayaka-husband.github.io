@@ -17,40 +17,45 @@
             min-height: 100vh;
         }
 
-        /* 提示窗口样式 - 自适应大小 */
+        /* 提示窗口样式 - 缩小尺寸 */
         .tip-window {
             position: absolute;
-            width: 80%; /* 占屏幕宽度的80% */
-            max-width: 300px; /* 最大不超过300px */
-            height: auto; /* 高度自适应内容 */
-            padding: 15px 10px;
+            width: 65%; /* 从80%缩小到65%，更小巧 */
+            max-width: 220px; /* 最大宽度从300px缩到220px */
+            height: auto;
+            padding: 10px 8px; /* 减少内边距 */
             border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 6px; /* 缩小圆角 */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+
+        .tip-window:hover {
+            box-shadow: 0 3px 12px rgba(0,0,0,0.15);
         }
 
         .tip-text {
             font-family: '微软雅黑', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 16px;
+            font-size: 14px; /* 字体从16px缩到14px */
             text-align: center;
-            line-height: 1.5;
+            line-height: 1.4; /* 调整行高适配小尺寸 */
         }
 
-        /* 最终窗口样式 */
+        /* 最终窗口样式 - 同步缩小 */
         .final-window {
             position: fixed;
-            width: 85%; /* 占屏幕宽度的85% */
-            max-width: 300px;
+            width: 70%; /* 从85%缩小到70% */
+            max-width: 250px; /* 最大宽度从300px缩到250px */
             height: auto;
-            padding: 20px 15px;
+            padding: 15px 12px; /* 减少内边距 */
             border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-radius: 6px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.18);
             z-index: 2000;
             display: flex;
             flex-direction: column;
@@ -60,20 +65,20 @@
 
         .final-text {
             font-family: '微软雅黑', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 18px;
+            font-size: 16px; /* 字体从18px缩到16px */
             font-weight: bold;
             text-align: center;
-            margin-bottom: 15px;
-            line-height: 1.6;
+            margin-bottom: 12px;
+            line-height: 1.5;
         }
 
         #exitBtn {
             font-family: '微软雅黑', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 14px;
-            padding: 8px 20px;
+            font-size: 13px; /* 按钮字体从14px缩到13px */
+            padding: 6px 16px; /* 缩小按钮内边距 */
             cursor: pointer;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             background-color: #ff8fa3;
             color: white;
             transition: background-color 0.2s;
@@ -104,19 +109,16 @@
         ];
 
         const allWindows = [];
-        const totalWindows = 100; // 窗口数量
-        const popDelay = 50; // 窗口弹出间隔（毫秒），数值越大弹出越慢
-        const closeDelay = 30; // 窗口关闭间隔（毫秒），数值越大关闭越慢
+        const totalWindows = 100; // 窗口数量不变
+        const popDelay = 50; // 弹出间隔不变
+        const closeDelay = 30; // 关闭间隔不变
 
-        // 创建提示窗口（适配手机屏幕，且偏向左侧）
+        // 创建提示窗口（缩小版）
         function createTipWindow() {
-            // 获取屏幕实际宽度（减去安全边距）
-            const screenWidth = window.innerWidth - 40;
-            const screenHeight = window.innerHeight - 40;
-
-            // 随机位置偏向左侧（x轴范围调整为更靠左）
-            const x = Math.floor(Math.random() * (screenWidth * 0.7)) - 20; // 限制在屏幕左侧70%区域
-            const y = Math.floor(Math.random() * screenHeight) - 20;
+            const screenWidth = window.innerWidth - 30; // 调整安全边距适配小窗口
+            const screenHeight = window.innerHeight - 30;
+            const x = Math.floor(Math.random() * (screenWidth * 0.7)) - 15; // 适配小窗口位置
+            const y = Math.floor(Math.random() * screenHeight) - 15;
 
             const div = document.createElement('div');
             div.className = 'tip-window';
@@ -124,16 +126,13 @@
             div.style.top = `${y}px`;
             div.style.opacity = '0';
 
-            // 随机选择提示文本和背景颜色
             const tip = tips[Math.floor(Math.random() * tips.length)];
             const bg = bgColors[Math.floor(Math.random() * bgColors.length)];
-
             div.style.backgroundColor = bg;
 
             const textDiv = document.createElement('div');
             textDiv.className = 'tip-text';
             textDiv.textContent = tip;
-
             div.appendChild(textDiv);
             document.body.appendChild(div);
 
@@ -141,6 +140,20 @@
             setTimeout(() => {
                 div.style.opacity = '1';
             }, 10);
+
+            // 点击关闭功能保留
+            div.onclick = function() {
+                this.style.opacity = '0';
+                setTimeout(() => {
+                    if (this.parentNode) {
+                        document.body.removeChild(this);
+                        const index = allWindows.indexOf(this);
+                        if (index > -1) {
+                            allWindows.splice(index, 1);
+                        }
+                    }
+                }, 300);
+            };
 
             return div;
         }
@@ -150,14 +163,12 @@
             if (index < totalWindows) {
                 const window = createTipWindow();
                 allWindows.push(window);
-                // 延迟创建下一个窗口（popDelay越大，弹出越慢）
                 setTimeout(() => {
                     createWindowsOneByOne(index + 1);
                 }, popDelay);
             } else {
-                // 所有窗口创建完成后，等待2秒开始关闭
                 setTimeout(() => {
-                    closeWindowsOneByOne(0, closeDelay); // 关闭间隔
+                    closeWindowsOneByOne(0, closeDelay);
                 }, 2000);
             }
         }
@@ -167,7 +178,6 @@
             if (index < allWindows.length) {
                 const window = allWindows[index];
                 if (window && window.parentNode) {
-                    // 淡出效果
                     window.style.opacity = '0';
                     setTimeout(() => {
                         document.body.removeChild(window);
@@ -177,17 +187,16 @@
                     closeWindowsOneByOne(index + 1, delay);
                 }, delay);
             } else {
-                // 所有窗口关闭后创建最终窗口
                 createFinalWindow();
             }
         }
 
-        // 创建最终窗口（居中显示）
+        // 创建最终窗口（缩小版）
         function createFinalWindow() {
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
-            const x = (screenWidth * 0.5) - (screenWidth * 0.85 / 2); // 水平居中
-            const y = (screenHeight * 0.5) - 75; // 垂直居中
+            const x = (screenWidth * 0.5) - (screenWidth * 0.7 / 2); // 适配缩小后的居中
+            const y = (screenHeight * 0.5) - 60; // 调整垂直居中位置
 
             const div = document.createElement('div');
             div.className = 'final-window';
@@ -216,15 +225,12 @@
             div.appendChild(exitBtn);
             document.body.appendChild(div);
 
-            // 淡入效果
             setTimeout(() => {
                 div.style.opacity = '1';
             }, 10);
         }
 
-        // 启动程序
         function main() {
-            // 开始逐个创建窗口
             createWindowsOneByOne();
         }
 
